@@ -22,6 +22,9 @@ namespace SimplePaymentProcessingApp.Credit
         public string? CardNumber { get; private set; }
 
         [JsonInclude]
+        public string? CVV {get; private set; }
+
+        [JsonInclude]
         [JsonPropertyName("Expiration")]
         [JsonConverter(typeof(MyJsonConverters.ExpirationDateConverter))]
         public DateTime? ExpirationDate { get; private set; }
@@ -43,7 +46,8 @@ namespace SimplePaymentProcessingApp.Credit
                 return this.Amount == other.Amount
                     && this.CardNumber == other.CardNumber
                     && this.ExpirationDate == other.ExpirationDate
-                    && this.CardholderName == other.CardholderName;
+                    && this.CardholderName == other.CardholderName
+                    && this.CVV == other.CVV;
             }
             else
             {

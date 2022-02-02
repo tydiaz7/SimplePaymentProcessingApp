@@ -65,7 +65,7 @@ namespace SimplePaymentProcessingApp.Credit
             }
             else if (!request.ExpirationDate.HasValue)
             {
-                return new TransactionResponse(CommandStatus.Declined, "Duplicate transaction already exists.", 0, false);
+                return new TransactionResponse(CommandStatus.Declined, "Expiration date is invalid or not specified", 0, false);
             }
 
             // Store nullable required request fields in nonnull local variables.
@@ -89,9 +89,13 @@ namespace SimplePaymentProcessingApp.Credit
             }
 
             // If requireCardholderName is enabled, make sure that the cardholder name has been provided.
-            if (requireCardholderName && request.CardholderName == null)
+            if (requireCardholderName)
             {
-                return new TransactionResponse(CommandStatus.Declined, "Cardholder name invalid or not provided.", 0, false);
+                if (request.CardholderName == null || !(request.CardholderName.Count(x => x == ' ') == 1))
+                    {
+                        return new TransactionResponse(CommandStatus.Declined, "Cardholder name invalid or not provided.", 0, false);
+                    }
+                
             }
 
             decimal fee;
