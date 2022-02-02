@@ -11,10 +11,12 @@
             <TextBox Name="InputBox" Text="Request Goes Here!" AcceptsReturn="true" AcceptsTab="true" IsReadOnly="False" Width="300" Height="230" Canvas.Top="10" Canvas.Left="10"/>
             <TextBox Name="OutputBox" Text="Response Comes Here!" IsReadOnly="True" TextWrapping="Wrap" Width="300" Height="230" Canvas.Top="260" Canvas.Left="10"/>
             
+            <CheckBox Name="GiftCardCheckbox" IsChecked="False" Canvas.Left="400" Canvas.Top="180">Is Giftcard</CheckBox>
             <CheckBox Name="CheckDuplicateCheckbox" IsChecked="False" Canvas.Left="400" Canvas.Top="200">Check Duplicate</CheckBox>
             <CheckBox Name="ValidateExpirationDateCheckbox" IsChecked="False" Canvas.Left="400" Canvas.Top="220">Validate Expiration Date</CheckBox>
             <CheckBox Name="RequireCardholderNameCheckbox" IsChecked="False" Canvas.Left="400" Canvas.Top="240">Require Cardholder Name</CheckBox>
             <CheckBox Name="WaiveFeeCheckbox" IsChecked="False" Canvas.Left="400" Canvas.Top="260">Waive Fee</CheckBox>
+            <CheckBox Name="AlwaysRequireSignatureCheckbox" IsChecked="False" Canvas.Left="400" Canvas.Top="280">Always Require Signature</CheckBox>
             
             <Button Name="Execute" Click="OnExecuteButtonPressed" Height="50" Width="100" Canvas.Left="590" Canvas.Top="440">Execute</Button>
         </Canvas>

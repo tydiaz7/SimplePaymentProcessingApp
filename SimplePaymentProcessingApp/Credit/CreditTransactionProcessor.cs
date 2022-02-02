@@ -23,6 +23,15 @@ namespace SimplePaymentProcessingApp.Credit
         }
         .ToImmutableDictionary();
 
+        private static readonly ImmutableDictionary<CardBrand, decimal> GiftCardBrandFeeMultipliers = new Dictionary<CardBrand, decimal>()
+        {
+            {CardBrand.Visa, 0.05m},
+            {CardBrand.MasterCard, 0.10m},
+            {CardBrand.Discover, 0.15m},
+            {CardBrand.Unknown, 0.25m}
+        }
+        .ToImmutableDictionary();
+
         private static List<CreditTransactionRequest> CreditTransactionRequestHistory = new List<CreditTransactionRequest>();
 
         /// <summary>
@@ -34,7 +43,16 @@ namespace SimplePaymentProcessingApp.Credit
         /// <param name="requireCardholderName">If true, the cardholder name will be checked to ensure it is present and valid.</param>
         /// <param name="waiveFee">If true, the processing fee will be waived.</param>
         /// <returns>A serializable response object that represents the processor's response to the given request.</returns>
-        public static TransactionResponse ProcessTransaction(CreditTransactionRequest request, bool checkDuplicate, bool validateExpirationDate, bool requireCardholderName, bool waiveFee)
+        public static TransactionResponse ProcessTransaction(
+            CreditTransactionRequest request, 
+            bool checkDuplicate,
+            bool validateExpirationDate,
+            bool requireCardholderName,
+            bool waiveFee,
+            bool IsGiftCard,
+            bool AlwaysReqSig
+            )
+
         {
             // Ensure required request fields are present and valid.
             if (!request.Amount.HasValue || request.Amount < 0)
@@ -82,10 +100,11 @@ namespace SimplePaymentProcessingApp.Credit
             {
                 fee = 0m;
             }
+            
             // Otherwise, calculate the fee based on the card brand, which is determined by examining the card number.
             else
             {
-                fee = CalculateFee(amount, DetermineCardBrand(cardNumber));
+                fee = CalculateFee(amount, DetermineCardBrand(cardNumber), IsGiftCard);
             }
 
             // Return approval response.
@@ -98,9 +117,16 @@ namespace SimplePaymentProcessingApp.Credit
         /// <param name="amount">Amount of money to calculate with.</param>
         /// <param name="cardBrand">Card brand to calculate for.</param>
         /// <returns>Amount of money present in the fee.</returns>
-        private static decimal CalculateFee(decimal amount, CardBrand cardBrand)
+        private static decimal CalculateFee(decimal amount, CardBrand cardBrand, bool IsGiftCard)
         {
-            return amount * CardBrandFeeMultipliers[cardBrand];
+            if (IsGiftCard)
+            {
+                return amount * GiftCardBrandFeeMultipliers[cardBrand];
+            }
+            else
+            {
+                return amount * CardBrandFeeMultipliers[cardBrand];
+            }
         }
 
         /// <summary>
@@ -108,6 +134,26 @@ namespace SimplePaymentProcessingApp.Credit
         /// </summary>
         /// <param name="cardNumber">Card number to examine.</param>
         /// <returns>Card brand of the given card number.</returns>
+        private static CardBrand DetermineGiftCardBrand(string cardNumber)
+        {
+            if (cardNumber.StartsWith("001615"))
+            {
+                return CardBrand.Visa;
+            }
+            else if (cardNumber.StartsWith("061680"))
+            {
+                return CardBrand.MasterCard;
+            }
+            else if (cardNumber.StartsWith("100101"))
+            {
+                return CardBrand.Discover;
+            }
+            else
+            {
+                return CardBrand.Unknown;
+            }
+
+        }
         private static CardBrand DetermineCardBrand(string cardNumber)
         {
             if (cardNumber.StartsWith("1024"))

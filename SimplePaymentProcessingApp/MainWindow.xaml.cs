@@ -53,8 +53,11 @@ namespace SimplePaymentProcessingApp
                 bool validateExpirationDate = ValidateExpirationDateCheckbox.IsChecked.HasValue ? ValidateExpirationDateCheckbox.IsChecked.Value : false;
                 bool requireCardholderName = RequireCardholderNameCheckbox.IsChecked.HasValue ? RequireCardholderNameCheckbox.IsChecked.Value : false;
                 bool waiveFee = WaiveFeeCheckbox.IsChecked.HasValue ? WaiveFeeCheckbox.IsChecked.Value : false;
+                bool IsGiftCard = GiftCardCheckbox.IsChecked.HasValue ? GiftCardCheckbox.IsChecked.Value : false;
+                bool AlwaysReqSig = AlwaysRequireSignatureCheckbox.IsChecked.HasValue ? AlwaysRequireSignatureCheckbox.IsChecked.Value : false;
+            
 
-                TransactionResponse response = CreditTransactionProcessor.ProcessTransaction(request, checkDuplicate, validateExpirationDate, requireCardholderName, waiveFee);
+                TransactionResponse response = CreditTransactionProcessor.ProcessTransaction(request, checkDuplicate, validateExpirationDate, requireCardholderName, waiveFee, IsGiftCard, AlwaysReqSig);
 
                 // Write response to output text box.
                 OutputBox.Text = JsonSerializer.Serialize(response, new JsonSerializerOptions { WriteIndented = true });
