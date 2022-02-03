@@ -10,28 +10,6 @@ namespace SimplePaymentProcessingApp.Credit
 {
     public static class CreditTransactionProcessor
     {
-        /// <summary>
-        /// Static, readonly, immutable Dictionary that describes the relationship between card brands and the processing fees associated with them.
-        /// </summary>
-        private static readonly ImmutableDictionary<CardBrand, decimal> CardBrandFeeMultipliers = new Dictionary<CardBrand, decimal>()
-        {
-            // TIL 'm' is the suffix for decimal.
-            { CardBrand.Visa, 0.04m }, 
-            { CardBrand.MasterCard, 0.08m },
-            { CardBrand.Discover, 0.12m },
-            { CardBrand.Unknown, 0.16m }
-        }
-        .ToImmutableDictionary();
-
-        private static readonly ImmutableDictionary<CardBrand, decimal> GiftCardBrandFeeMultipliers = new Dictionary<CardBrand, decimal>()
-        {
-            {CardBrand.Visa, 0.05m},
-            {CardBrand.MasterCard, 0.10m},
-            {CardBrand.Discover, 0.15m},
-            {CardBrand.Unknown, 0.25m}
-        }
-        .ToImmutableDictionary();
-
         private static List<CreditTransactionRequest> CreditTransactionRequestHistory = new List<CreditTransactionRequest>();
 
         /// <summary>
@@ -71,6 +49,7 @@ namespace SimplePaymentProcessingApp.Credit
 
             // Store nullable required request fields in nonnull local variables.
             decimal amount = request.Amount.Value;
+            // Ternary operator to ensure the correct non-null value is added to variable cardNumber
             string cardNumber = request.CardNumber != null ? request.CardNumber : request.Account !=null ? request.Account : "";
             DateTime expirationDate = request.ExpirationDate.Value;
 
@@ -93,7 +72,8 @@ namespace SimplePaymentProcessingApp.Credit
             // If requireCardholderName is enabled, make sure that the cardholder name has been provided.
             if (requireCardholderName)
             {
-                if (request.CardholderName == null || !(request.CardholderName.Count(x => x == ' ') == 1)) // This will reject all entries with less than or more than a single space, which will also reject improperly formatted fields
+                // This will reject all entries with less than or more than a single space, which will also reject improperly formatted fields
+                if (request.CardholderName == null || !(request.CardholderName.Count(x => x == ' ') == 1)) 
                     {
                         return new TransactionResponse(CommandStatus.Declined, "Cardholder name invalid or not provided.", 0, AlwaysReqSig);
                     }
@@ -110,29 +90,11 @@ namespace SimplePaymentProcessingApp.Credit
             // Otherwise, calculate the fee based on the card brand, which is determined by examining the card number.
             else
             {
-                fee = CalculateFee(request, amount, DetermineCardBrand(request, cardNumber));
+                fee = GiftorCredit.CalculateFee(request, amount, DetermineCardBrand(request, cardNumber));
             }
 
             // Return approval response.
             return new TransactionResponse(CommandStatus.Approved, "Transaction approved.", fee, true /* Successful transactions require a signature. */);
-        }
-
-        /// <summary>
-        /// Helper function to calculate the fee for a given card brand.
-        /// </summary>
-        /// <param name="amount">Amount of money to calculate with.</param>
-        /// <param name="cardBrand">Card brand to calculate for.</param>
-        /// <returns>Amount of money present in the fee.</returns>
-        private static decimal CalculateFee(CreditTransactionRequest request, decimal amount, CardBrand cardBrand)
-        {
-            if (GiftorCredit.DetermineGiftCard(request))
-            {
-                return amount * GiftCardBrandFeeMultipliers[cardBrand];
-            }
-            else
-            {
-                return amount * CardBrandFeeMultipliers[cardBrand];
-            }
         }
 
         /// <summary>
