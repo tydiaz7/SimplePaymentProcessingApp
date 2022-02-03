@@ -22,10 +22,10 @@ namespace SimplePaymentProcessingApp.Credit
         public string? CardNumber { get; private set; }
 
         [JsonInclude]
-        public string? Account {get; private set; }
+        public string? Account { get; private set; }
 
         [JsonInclude]
-        public string? CVV {get; private set; }
+        public string? CVV { get; private set; }
 
         [JsonInclude]
         [JsonPropertyName("Expiration")]

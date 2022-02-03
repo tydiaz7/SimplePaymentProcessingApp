@@ -56,7 +56,7 @@ namespace SimplePaymentProcessingApp
                 bool requireCardholderName = RequireCardholderNameCheckbox.IsChecked.HasValue ? RequireCardholderNameCheckbox.IsChecked.Value : false;
                 bool waiveFee = WaiveFeeCheckbox.IsChecked.HasValue ? WaiveFeeCheckbox.IsChecked.Value : false;
                 bool AlwaysReqSig = AlwaysRequireSignatureCheckbox.IsChecked.HasValue ? AlwaysRequireSignatureCheckbox.IsChecked.Value : false;
-            
+
 
                 TransactionResponse response = CreditTransactionProcessor.ProcessTransaction(request, gift, checkDuplicate, validateExpirationDate, requireCardholderName, waiveFee, AlwaysReqSig);
 
