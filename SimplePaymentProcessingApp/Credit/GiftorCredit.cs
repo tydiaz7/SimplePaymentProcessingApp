@@ -23,6 +23,9 @@ namespace SimplePaymentProcessingApp.Credit
         }
         .ToImmutableDictionary();
 
+        /// <summary>
+        /// Static, readonly, immutable Dictionary that describes the relationship between Gift Card Brands and the fees associated with them.
+        /// </summary>
         private static readonly ImmutableDictionary<CardBrand, decimal> GiftCardBrandFeeMultipliers = new Dictionary<CardBrand, decimal>()
         {
             {CardBrand.Visa, 0.05m},
@@ -31,11 +34,16 @@ namespace SimplePaymentProcessingApp.Credit
             {CardBrand.Unknown, 0.25m}
         }
         .ToImmutableDictionary();
+
+        /// <summary>
+        /// Determines whether or not a given request contains a Gift Card or a Credit Card
+        /// </summary>
         public static bool DetermineGiftCard(CreditTransactionRequest request)
         {
             if (request.CVV != null && request.Account != null)
             {
-                if (request.Account.EndsWith(request.CVV) && request.Account.Length == 18) //Makes sure all Gift Cards are valid before returning true
+                // Makes sure all Gift Card fields are valid before returning true
+                if (request.Account.EndsWith(request.CVV) && request.Account.Length == 18)
                 {
                     return true;
                 }
@@ -53,6 +61,7 @@ namespace SimplePaymentProcessingApp.Credit
         /// <summary>
         /// Helper function to calculate the fee for a given card brand.
         /// </summary>
+        /// <param name="request">Deserialized request data object.</param>
         /// <param name="amount">Amount of money to calculate with.</param>
         /// <param name="cardBrand">Card brand to calculate for.</param>
         /// <returns>Amount of money present in the fee.</returns>
@@ -67,9 +76,11 @@ namespace SimplePaymentProcessingApp.Credit
                 return amount * CardBrandFeeMultipliers[cardBrand];
             }
         }
+
         /// <summary>
         /// Determines the card brand of a given card number by analyzing its first four digits.
         /// </summary>
+        /// <param name="request">Deserialized request data object.</param>
         /// <param name="cardNumber">Card number to examine.</param>
         /// <returns>Card brand of the given card number.</returns>
         public static CardBrand DetermineCardBrand(CreditTransactionRequest request, string cardNumber)

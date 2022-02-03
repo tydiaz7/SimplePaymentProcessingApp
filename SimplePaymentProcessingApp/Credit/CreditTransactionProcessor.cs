@@ -29,7 +29,8 @@ namespace SimplePaymentProcessingApp.Credit
             bool validateExpirationDate,
             bool requireCardholderName,
             bool waiveFee,
-            bool AlwaysReqSig ///Always Require Signature is a boolean already, passing it to the returns will ensure that if it is checked all responses will require a signature
+            // Always Require Signature is a boolean already, passing it to the returns will ensure that if it is checked all responses will require a signature
+            bool AlwaysReqSig
             )
 
         {
