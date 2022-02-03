@@ -71,7 +71,7 @@ namespace SimplePaymentProcessingApp.Credit
 
             // Store nullable required request fields in nonnull local variables.
             decimal amount = request.Amount.Value;
-            string cardNumber = request.CardNumber;
+            string cardNumber = request.CardNumber != null ? request.CardNumber : request.Account !=null ? request.Account : "";
             DateTime expirationDate = request.ExpirationDate.Value;
 
             // If checkDuplicate is enabled, look through the history for any duplicates.
@@ -144,15 +144,15 @@ namespace SimplePaymentProcessingApp.Credit
         {
             if (GiftorCredit.DetermineGiftCard(request))
             {
-                if (request.Account.StartsWith("001615") || cardNumber.StartsWith("1024"))
+                if (cardNumber.StartsWith("001615"))
             {
                 return CardBrand.Visa;
             }
-                else if (request.Account.StartsWith("061680") || cardNumber.StartsWith("2048"))
+                else if (cardNumber.StartsWith("061680"))
             {
                 return CardBrand.MasterCard;
             }
-                else if (request.Account.StartsWith("100101") || cardNumber.StartsWith("4096"))
+                else if (cardNumber.StartsWith("100101"))
             {
                 return CardBrand.Discover;
             }
