@@ -42,15 +42,16 @@ namespace SimplePaymentProcessingApp.Credit
         /// <param name="validateExpirationDate">If true, the expiration date will be checked to ensure that it has not passed.</param>
         /// <param name="requireCardholderName">If true, the cardholder name will be checked to ensure it is present and valid.</param>
         /// <param name="waiveFee">If true, the processing fee will be waived.</param>
+        /// <param name="AlwaysReqSig">If true, a signature will be required for all transactions regardless of approval status.</param>
         /// <returns>A serializable response object that represents the processor's response to the given request.</returns>
         public static TransactionResponse ProcessTransaction(
             CreditTransactionRequest request, 
+            bool gift,
             bool checkDuplicate,
             bool validateExpirationDate,
             bool requireCardholderName,
             bool waiveFee,
-            bool AlwaysReqSig,
-            GiftorCredit gift
+            bool AlwaysReqSig ///Always Require Signature is a boolean already, passing it to the returns will ensure that if it is checked all responses will require a signature
             )
 
         {
@@ -59,7 +60,7 @@ namespace SimplePaymentProcessingApp.Credit
             {
                 return new TransactionResponse(CommandStatus.Declined, "Amount invalid or not specified.", 0, AlwaysReqSig);
             }
-            else if (request.CardNumber == null || request.CardNumber.Length != 16)
+            else if (!GiftorCredit.DetermineGiftCard(request) && (request.CardNumber == null || request.CardNumber.Length != 16))
             {
                 return new TransactionResponse(CommandStatus.Declined, "Card number is invalid or not specified.", 0, AlwaysReqSig);
             }
@@ -124,7 +125,7 @@ namespace SimplePaymentProcessingApp.Credit
         /// <returns>Amount of money present in the fee.</returns>
         private static decimal CalculateFee(CreditTransactionRequest request, decimal amount, CardBrand cardBrand)
         {
-            if (request.Account != null && (IsGiftCard(request, request.Account) == true))
+            if (GiftorCredit.DetermineGiftCard(request))
             {
                 return amount * GiftCardBrandFeeMultipliers[cardBrand];
             }
@@ -134,59 +135,24 @@ namespace SimplePaymentProcessingApp.Credit
             }
         }
 
-        private static bool IsGiftCard(CreditTransactionRequest request, string cardNumber)
-        {
-            if (request.CVV == null)
-            {
-                return false;
-            }
-            else if (request.Account != null && request.Account.EndsWith(request.CVV))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
         /// <summary>
         /// Determines the card brand of a given card number by analyzing its first four digits.
         /// </summary>
         /// <param name="cardNumber">Card number to examine.</param>
         /// <returns>Card brand of the given card number.</returns>
-        private static CardBrand DetermineGiftCardBrand(string cardNumber)
-        {
-            if (cardNumber.StartsWith("001615"))
-            {
-                return CardBrand.Visa;
-            }
-            else if (cardNumber.StartsWith("061680"))
-            {
-                return CardBrand.MasterCard;
-            }
-            else if (cardNumber.StartsWith("100101"))
-            {
-                return CardBrand.Discover;
-            }
-            else
-            {
-                return CardBrand.Unknown;
-            }
-
-        }
         private static CardBrand DetermineCardBrand(CreditTransactionRequest request, string cardNumber)
         {
-            if (request.Account != null && request.CVV !=null && request.Account.EndsWith(request.CVV))
+            if (GiftorCredit.DetermineGiftCard(request))
             {
-                if (request.Account.StartsWith("001615"))
+                if (request.Account.StartsWith("001615") || cardNumber.StartsWith("1024"))
             {
                 return CardBrand.Visa;
             }
-                else if (request.Account.StartsWith("061680"))
+                else if (request.Account.StartsWith("061680") || cardNumber.StartsWith("2048"))
             {
                 return CardBrand.MasterCard;
             }
-                else if (request.Account.StartsWith("100101"))
+                else if (request.Account.StartsWith("100101") || cardNumber.StartsWith("4096"))
             {
                 return CardBrand.Discover;
             }

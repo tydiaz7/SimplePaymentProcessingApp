@@ -33,6 +33,7 @@ namespace SimplePaymentProcessingApp
         void OnExecuteButtonPressed(object sender, RoutedEventArgs args)
         {
             CreditTransactionRequest? request = null;
+            // GiftorCredit? gift = null; 
             // Attempt to deserialize the request.
             try
             {
@@ -49,6 +50,7 @@ namespace SimplePaymentProcessingApp
             // If the request is successfully deserialized, attempt to process the transaction.
             if (request != null)
             {
+                bool gift = GiftorCredit.DetermineGiftCard(request);
                 bool checkDuplicate = CheckDuplicateCheckbox.IsChecked.HasValue ? CheckDuplicateCheckbox.IsChecked.Value : false;
                 bool validateExpirationDate = ValidateExpirationDateCheckbox.IsChecked.HasValue ? ValidateExpirationDateCheckbox.IsChecked.Value : false;
                 bool requireCardholderName = RequireCardholderNameCheckbox.IsChecked.HasValue ? RequireCardholderNameCheckbox.IsChecked.Value : false;
@@ -56,7 +58,7 @@ namespace SimplePaymentProcessingApp
                 bool AlwaysReqSig = AlwaysRequireSignatureCheckbox.IsChecked.HasValue ? AlwaysRequireSignatureCheckbox.IsChecked.Value : false;
             
 
-                TransactionResponse response = CreditTransactionProcessor.ProcessTransaction(request, checkDuplicate, validateExpirationDate, requireCardholderName, waiveFee, AlwaysReqSig);
+                TransactionResponse response = CreditTransactionProcessor.ProcessTransaction(request, gift, checkDuplicate, validateExpirationDate, requireCardholderName, waiveFee, AlwaysReqSig);
 
                 // Write response to output text box.
                 OutputBox.Text = JsonSerializer.Serialize(response, new JsonSerializerOptions { WriteIndented = true });

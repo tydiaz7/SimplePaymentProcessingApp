@@ -8,15 +8,13 @@ using System.Threading.Tasks;
 
 namespace SimplePaymentProcessingApp.Credit
 {
-    public static class GiftorCredit
+    public class GiftorCredit
     {
-        public static bool DetermineGiftCard(
-            CreditTransactionRequest request
-        )
+        public static bool DetermineGiftCard(CreditTransactionRequest request)
         {
             if (request.CVV != null && request.Account != null)
             {
-                if (request.Account.EndsWith(request.CVV))
+                if (request.Account.EndsWith(request.CVV) && request.Account.Length == 18)
                 {
                     return true;
                 }
