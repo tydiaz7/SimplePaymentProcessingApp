@@ -22,6 +22,9 @@ namespace SimplePaymentProcessingApp.Credit
         public string? CardNumber { get; private set; }
 
         [JsonInclude]
+        public string? Account {get; private set; }
+
+        [JsonInclude]
         public string? CVV {get; private set; }
 
         [JsonInclude]
@@ -45,6 +48,7 @@ namespace SimplePaymentProcessingApp.Credit
             {
                 return this.Amount == other.Amount
                     && this.CardNumber == other.CardNumber
+                    && this.Account == other.Account
                     && this.ExpirationDate == other.ExpirationDate
                     && this.CardholderName == other.CardholderName
                     && this.CVV == other.CVV;

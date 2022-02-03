@@ -49,23 +49,23 @@ namespace SimplePaymentProcessingApp.Credit
             bool validateExpirationDate,
             bool requireCardholderName,
             bool waiveFee,
-            bool IsGiftCard,
-            bool AlwaysReqSig
+            bool AlwaysReqSig,
+            GiftorCredit gift
             )
 
         {
             // Ensure required request fields are present and valid.
             if (!request.Amount.HasValue || request.Amount < 0)
             {
-                return new TransactionResponse(CommandStatus.Declined, "Amount invalid or not specified.", 0, false);
+                return new TransactionResponse(CommandStatus.Declined, "Amount invalid or not specified.", 0, AlwaysReqSig);
             }
             else if (request.CardNumber == null || request.CardNumber.Length != 16)
             {
-                return new TransactionResponse(CommandStatus.Declined, "Card number is invalid or not specified.", 0, false);
+                return new TransactionResponse(CommandStatus.Declined, "Card number is invalid or not specified.", 0, AlwaysReqSig);
             }
             else if (!request.ExpirationDate.HasValue)
             {
-                return new TransactionResponse(CommandStatus.Declined, "Expiration date is invalid or not specified", 0, false);
+                return new TransactionResponse(CommandStatus.Declined, "Expiration date is invalid or not specified", 0, AlwaysReqSig);
             }
 
             // Store nullable required request fields in nonnull local variables.
@@ -76,7 +76,7 @@ namespace SimplePaymentProcessingApp.Credit
             // If checkDuplicate is enabled, look through the history for any duplicates.
             if (checkDuplicate && CreditTransactionRequestHistory.Any((r) => r.Equals(request)))
             {
-                return new TransactionResponse(CommandStatus.Declined, "Duplicate transaction already exists.", 0, false);
+                return new TransactionResponse(CommandStatus.Declined, "Duplicate transaction already exists.", 0, AlwaysReqSig);
             }
 
             // Add the transaction so that it can be duplicate-checked in the future.
@@ -85,15 +85,16 @@ namespace SimplePaymentProcessingApp.Credit
             // If validateExpirationDate is enabled, check that the expiration date has not passed.
             if (validateExpirationDate && request.ExpirationDate < DateTime.Now)
             {
-                return new TransactionResponse(CommandStatus.Declined, "Card expired.", 0, false);
+                return new TransactionResponse(CommandStatus.Declined, "Card expired.", 0, AlwaysReqSig);
             }
+
 
             // If requireCardholderName is enabled, make sure that the cardholder name has been provided.
             if (requireCardholderName)
             {
-                if (request.CardholderName == null || !(request.CardholderName.Count(x => x == ' ') == 1))
+                if (request.CardholderName == null || !(request.CardholderName.Count(x => x == ' ') == 1)) // This will reject all entries with less than or more than a single space, which will also reject improperly formatted fields
                     {
-                        return new TransactionResponse(CommandStatus.Declined, "Cardholder name invalid or not provided.", 0, false);
+                        return new TransactionResponse(CommandStatus.Declined, "Cardholder name invalid or not provided.", 0, AlwaysReqSig);
                     }
                 
             }
@@ -108,7 +109,7 @@ namespace SimplePaymentProcessingApp.Credit
             // Otherwise, calculate the fee based on the card brand, which is determined by examining the card number.
             else
             {
-                fee = CalculateFee(amount, DetermineCardBrand(cardNumber), IsGiftCard);
+                fee = CalculateFee(request, amount, DetermineCardBrand(request, cardNumber));
             }
 
             // Return approval response.
@@ -121,9 +122,9 @@ namespace SimplePaymentProcessingApp.Credit
         /// <param name="amount">Amount of money to calculate with.</param>
         /// <param name="cardBrand">Card brand to calculate for.</param>
         /// <returns>Amount of money present in the fee.</returns>
-        private static decimal CalculateFee(decimal amount, CardBrand cardBrand, bool IsGiftCard)
+        private static decimal CalculateFee(CreditTransactionRequest request, decimal amount, CardBrand cardBrand)
         {
-            if (IsGiftCard)
+            if (request.Account != null && (IsGiftCard(request, request.Account) == true))
             {
                 return amount * GiftCardBrandFeeMultipliers[cardBrand];
             }
@@ -133,6 +134,21 @@ namespace SimplePaymentProcessingApp.Credit
             }
         }
 
+        private static bool IsGiftCard(CreditTransactionRequest request, string cardNumber)
+        {
+            if (request.CVV == null)
+            {
+                return false;
+            }
+            else if (request.Account != null && request.Account.EndsWith(request.CVV))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
         /// <summary>
         /// Determines the card brand of a given card number by analyzing its first four digits.
         /// </summary>
@@ -158,24 +174,44 @@ namespace SimplePaymentProcessingApp.Credit
             }
 
         }
-        private static CardBrand DetermineCardBrand(string cardNumber)
+        private static CardBrand DetermineCardBrand(CreditTransactionRequest request, string cardNumber)
         {
-            if (cardNumber.StartsWith("1024"))
+            if (request.Account != null && request.CVV !=null && request.Account.EndsWith(request.CVV))
+            {
+                if (request.Account.StartsWith("001615"))
             {
                 return CardBrand.Visa;
             }
-            else if (cardNumber.StartsWith("2048"))
+                else if (request.Account.StartsWith("061680"))
             {
                 return CardBrand.MasterCard;
             }
-            else if (cardNumber.StartsWith("4096"))
+                else if (request.Account.StartsWith("100101"))
             {
                 return CardBrand.Discover;
             }
-            else
+                else
             {
                 return CardBrand.Unknown;
             }
+            }
+            else
+                if (cardNumber.StartsWith("1024"))
+                {
+                    return CardBrand.Visa;
+                }
+                else if (cardNumber.StartsWith("2048"))
+                {
+                    return CardBrand.MasterCard;
+                }
+                else if (cardNumber.StartsWith("4096"))
+                {
+                    return CardBrand.Discover;
+                }
+                else
+                {
+                    return CardBrand.Unknown;
+                }
         }
     }
 }
