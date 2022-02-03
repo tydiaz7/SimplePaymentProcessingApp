@@ -39,6 +39,7 @@ namespace SimplePaymentProcessingApp.Credit
             {
                 return new TransactionResponse(CommandStatus.Declined, "Amount invalid or not specified.", 0, AlwaysReqSig);
             }
+            // Added an extra check, handled in DetermineGiftCard, to determine whether the card has a valid number or not
             else if (!GiftorCredit.DetermineGiftCard(request) && (request.CardNumber == null || request.CardNumber.Length != 16))
             {
                 return new TransactionResponse(CommandStatus.Declined, "Card number is invalid or not specified.", 0, AlwaysReqSig);
