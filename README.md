@@ -177,3 +177,19 @@ Note that this base fee should not replace or influence the percentage fee appli
 ## Tips and Hints
 
 For Subtask I, since the same input box must be used for both credit and gift card transactions, it's important to discern what type of transaction is meant to occur before deserializing the request. You might do this by adding a `TransactionType`field to the request, and checking to see if the request contains the transaction type you're looking for. However, there are many possibilities for acceptable solutions to this problem, and you are encouraged to think about the best course of action.
+
+
+## Submission Notes
+
+I'd like to mention a few things here for my submission. This project was a challenge for me because I have historically only used data driven languages and shifting to a nominative type object oriented language was an adjustment. However, I enjoyed working through the tasks to make it work as given in the spec.
+
+I did find a small error in the source code in CreditTransactionProcessor on Line 50 where the return gave the response, "Duplicate transaction already exists." where instead it should say something along the lines of, "Card Expired." I made this change within my code.
+
+### Subtask 1
+This task gave me the most trouble, as it required the most work with concepts I did not fully understand. I ended up creating a Helper Function file and put most of the decision logic inside there to aid in cleaning up the CreditTransactionProcessor file.
+
+### Subtask 2
+Subtask 2 just required an additional check to see if there is exactly one space in the Card Holder Name field. I was originally going to use RegEx for it but I opted to keep it simple in favor of readability in this particular instance. My addition will also catch errors in formatting such as an additional space in the beginning or end of the field, `" John Doe"` for instance, but will not catch special characters such as a hyphen or apostrophe as those exist in some given names and hyphenated surnames.
+
+### Subtask 3
+This was by far the easiest task. Adding the checkbox itself created a boolean value which could be passed to each return function.
